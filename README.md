@@ -1,6 +1,6 @@
-# ☠️ Reverse Shell Generator PRO
-
-![Hero](assets/hero.png)
+<h1 align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=35&duration=3000&pause=1000&color=10B981&center=true&vCenter=true&multiline=false&width=800&height=100&lines=☠️+REVERSE+SHELL+GENERATOR+PRO;🚀+1000%2B+PAYLOAD+COMBINATIONS;💀+OFFENSIVE+SECURITY+TOOLKIT" alt="Typing SVG" />
+</h1>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/geevarghesekthomas84-sys/reverse-shell-generator?style=social)](https://github.com/geevarghesekthomas84-sys/reverse-shell-generator/stargazers)
