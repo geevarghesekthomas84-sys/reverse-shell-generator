@@ -421,8 +421,8 @@
         <main class="main-content">
             <header class="header-bar">
                 <div class="page-title">
-                    <h1>Command & Control Generator</h1>
-                    <p>Premium grade reverse shell payloads for authorized operations.</p>
+                    <h1>Command & Control Generator <span id="payloadCount" class="badge badge-primary" style="font-size: 0.8rem; vertical-align: middle; margin-left: 10px;">0</span></h1>
+                    <p>A premium, enterprise-grade Command & Control (C2) payload generator featuring 1,000+ unique payload combinations for Red Team operators.</p>
                 </div>
                 <div class="search-container">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -736,6 +736,7 @@
                 return matchesFilter && matchesSearch;
             });
 
+            document.getElementById('payloadCount').textContent = filtered.length;
             filtered.forEach(p => {
                 let text = p.template(ip, port, shell);
                 let display = encodePayload(text, encoding);

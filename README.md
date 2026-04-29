@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/geevarghesekthomas84-sys/reverse-shell-generator?style=social)](https://github.com/geevarghesekthomas84-sys/reverse-shell-generator/stargazers)
 
-**A premium, enterprise-grade Command & Control (C2) payload generator designed for Red Team operators and Penetration Testers.**
+**A premium, enterprise-grade Command & Control (C2) payload generator featuring 1,000+ unique payload combinations for Red Team operators.**
 
 ---
 
