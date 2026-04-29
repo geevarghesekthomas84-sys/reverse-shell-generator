@@ -4,7 +4,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/geevarghesekthomas84-sys/reverse-shell-generator?style=social)](https://github.com/geevarghesekthomas84-sys/reverse-shell-generator/stargazers)
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Access_Now-emerald?style=for-the-badge&logo=github)](https://geevarghesekthomas84-sys.github.io/reverse-shell-generator/)
 
 **A premium, enterprise-grade Command & Control (C2) payload generator designed for Red Team operators and Penetration Testers.**
 
@@ -35,9 +34,6 @@
 ---
 
 ## 🚀 Deployment
-
-### Online
-Access the production deployment: [https://geevarghesekthomas84-sys.github.io/reverse-shell-generator/](https://geevarghesekthomas84-sys.github.io/reverse-shell-generator/)
 
 ### Local Development
 ```bash
